@@ -28,30 +28,9 @@ def shopSmart(orderList, fruitShops):
     """
         orderList: List of (fruit, numPound) tuples
         fruitShops: List of FruitShops
-   ************************************************************
-    Below are variables for holding the fruit Shop, the best total cost for 
-    each shop and a temporary variable for comparing the prices
     """
-    bestCost = None
-    temp = 0.0
-    store = None
-    """
-    2 nested for loops for pulling data from each shop and computing the total 
-    cost of the order for each shop.
-    """
-    for fruitShop in fruitShops:
-        for fruit, numPounds in orderList:
-            temp = fruitShop.getPriceOfOrder(orderList)
-        """
-        Compare the price of the order at one shop to the temp variable. Here, 
-        we assign the fruitShop to a store variable so we can return the shop
-        with the best price
-        """
-        if bestCost == None or bestCost > temp:
-            store = fruitShop
-            bestCost = temp
-            temp = 0.0     
-    return store
+    "*** YOUR CODE HERE ***"
+    return None
 
 
 if __name__ == '__main__':

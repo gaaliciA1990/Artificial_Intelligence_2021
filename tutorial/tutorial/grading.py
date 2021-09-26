@@ -15,7 +15,6 @@
 "Common code for autograders"
 
 from __future__ import print_function
-import html
 import cgi
 import time
 import sys
@@ -147,7 +146,7 @@ to follow your instructor's guidelines to receive credit on your project.
     def addExceptionMessage(self, q, inst, traceback):
         """
         Method to format the exception message, this is more complicated because
-        we need to html.escape the traceback but wrap the exception in a <pre> tag
+        we need to cgi.escape the traceback but wrap the exception in a <pre> tag
         """
         self.fail('FAIL: Exception raised: %s' % inst)
         self.addMessage('')
@@ -294,7 +293,7 @@ to follow your instructor's guidelines to receive credit on your project.
             if self.mute: util.unmutePrint()
             print('*** ' + message)
             if self.mute: util.mutePrint()
-            message = html.escape(message)
+            message = cgi.escape(message)
         self.messages[self.currentQuestion].append(message)
 
     def addMessageToEmail(self, message):

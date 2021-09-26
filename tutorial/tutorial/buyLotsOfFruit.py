@@ -35,12 +35,9 @@ def buyLotsOfFruit(orderList):
     Returns cost of order
     """
     totalCost = 0.0
-    for fruit, numPounds in orderList:
-        if fruit not in fruitPrices.keys():
-            print("Error: Fruit is not available!")
-            return 0
-        totalCost += fruitPrices[fruit] * numPounds
+    "*** YOUR CODE HERE ***"
     return totalCost
+
 
 # Main Method
 if __name__ == '__main__':
