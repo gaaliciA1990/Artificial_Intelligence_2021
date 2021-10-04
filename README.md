@@ -1,2 +1,2 @@
 # Artificial_Intelligence_2021
-Compilation of homework and project from AI class - MSCS
+PacMan Project repo for class. This repo will track the progress of the PacMan AI game throughout the Fall quarter
