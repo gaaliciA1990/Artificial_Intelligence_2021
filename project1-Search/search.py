@@ -19,6 +19,7 @@ Pacman agents (in searchAgents.py).
 
 import util
 
+
 class SearchProblem:
     """
     This class outlines the structure of a search problem, but doesn't implement
@@ -70,7 +71,8 @@ def tinyMazeSearch(problem):
     from game import Directions
     s = Directions.SOUTH
     w = Directions.WEST
-    return  [s, s, w, s, w, w, s, w]
+    return [s, s, w, s, w, w, s, w]
+
 
 def depthFirstSearch(problem):
     """
@@ -86,18 +88,92 @@ def depthFirstSearch(problem):
     print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # Using a stack for we are working LIFO.
+    fringe = util.Stack()
+
+    # previously visited nodes in a list. Stored as (state, action)
+    visitedNodes = []
+
+    # define start state and tracking node
+    startState = problem.getStartState()
+    startNode = (startState, [])
+
+    fringe.push(startNode)
+
+    while not fringe.isEmpty():
+        # check the most recently pushed node in fringe
+        currState, actions = fringe.pop()
+        if startState not in visitedNodes:
+            # move the node to a visited node list
+            visitedNodes.append(currState)
+            if problem.isGoalState(currState):
+                return actions
+            else:
+                # pull the list of potential successor node
+                successors = problem.getSuccessors(currState)
+
+                # push each successor to fringe
+                for successorState, successorAction, successorCost in successors:
+                    newAction = actions + [successorAction]
+                    newNode = (successorState, newAction)
+                    fringe.push(newNode)
+    return actions
+
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # Using a queue since we are working FIFO. Stored as (state, action, cost)
+    fringe = util.Queue()
+
+    # previously visited nodes in a list
+    visitedNodes = []
+
+    startState = problem.getStartState()
+    startNode = (startState, [], 0)
+
+    fringe.push(startNode)
+
+    while not fringe.isEmpty():
+        # check the first or earliest-pushed node in fringe
+        currState, actions, currCost = fringe.pop()
+        if currState not in visitedNodes:
+            # add popped node state into visited list
+            visitedNodes.append(currState)
+            if problem.isGoalState(currState):
+                return actions
+            else:
+                # list the successor, action and stepCost
+                successors = problem.getSuccessors(currState)
+                for successorState, successorAction, successorCost in successors:
+                    newAction = actions + [successorAction]
+                    newCost = currCost + successorCost
+                    newNode = (successorState, newAction, newCost)
+                    fringe.push(newNode)
+
+    return actions
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # Using a priority queue for UCS. We are working FIFO. Stored as (item, cost)
+    fringe = util.PriorityQueue()
+
+    # previously expanded state in a dictionary for cycle checking. (state:cost)
+    visitedNodes = {}
+
+    startState = problem.getStartState()
+    startNode = (startState, [], 0) # (state, action, cost)
+
+    fringe.push(startNode, 0)
+
+    while not fringe.isEmpty():
+        # explor the first node in fringe, which should be the cheapest cost
+        currState, actions, currCost = fringe.pop()
+        if (currState not in visitedNodes) or (currCost < visitedNodes[currState]):
+            # place the popped state in our visited list
+            visitedNodes[currState] = currCost
+            #TODO: Finish this code
+
+    return actions
 
 def nullHeuristic(state, problem=None):
     """
@@ -105,6 +181,7 @@ def nullHeuristic(state, problem=None):
     goal in the provided SearchProblem.  This heuristic is trivial.
     """
     return 0
+
 
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
