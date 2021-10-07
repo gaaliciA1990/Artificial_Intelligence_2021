@@ -83,12 +83,12 @@ def depthFirstSearch(problem):
 
     To get started, you might want to try some of these simple commands to
     understand the search problem that is being passed in:
-
+  """
     print("Start:", problem.getStartState())
     print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
-    """
-    # Using a stack for we are working LIFO.
+
+    # Using a stack of tuples to track the state and actions based on LIFO.
     fringe = util.Stack()
 
     # previously visited nodes in a list. Stored as (state, action)
