@@ -119,9 +119,9 @@ def depthFirstSearch(problem):
                 # print("My next move is: " + str(successors))
 
                 # push each successor to fringe
-                for successorLocation, successorAction, successorCost in successors:
+                for successorState, successorAction, successorCost in successors:
                     newAction = actions + [successorAction]
-                    newNode = (successorLocation, newAction)
+                    newNode = (successorState, newAction)
                     fringe.push(newNode)
     return actions
 
