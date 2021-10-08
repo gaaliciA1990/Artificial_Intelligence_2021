@@ -83,39 +83,45 @@ def depthFirstSearch(problem):
 
     To get started, you might want to try some of these simple commands to
     understand the search problem that is being passed in:
-  """
     print("Start:", problem.getStartState())
     print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
+  """
 
-    # Using a stack of tuples to track the state and actions based on LIFO.
+    # Using a stack of tuples to track the (location, actions) based on LIFO.
     fringe = util.Stack()
 
-    # previously visited nodes in a list. Stored as (state, action)
+    # previously visited location (nodes) in a list. Holds the location/state
     visitedNodes = []
 
     # define start state and tracking node
     startState = problem.getStartState()
     startNode = (startState, [])
 
+    # Push the tuples into our start Node for the coordinates and action taken
     fringe.push(startNode)
 
     while not fringe.isEmpty():
-        # check the most recently pushed node in fringe
-        currState, actions = fringe.pop()
-        if startState not in visitedNodes:
+        # check the most recently pushed node in fringe to find the location and action (path)
+        state, actions = fringe.pop()
+
+        # Validate we don't expand an already visited node
+        if state not in visitedNodes:
             # move the node to a visited node list
-            visitedNodes.append(currState)
-            if problem.isGoalState(currState):
+            visitedNodes.append(state)
+            # print("The state is: " + str(state))
+
+            if problem.isGoalState(state):
                 return actions
             else:
                 # pull the list of potential successor node
-                successors = problem.getSuccessors(currState)
+                successors = problem.getSuccessors(state)
+                # print("My next move is: " + str(successors))
 
                 # push each successor to fringe
-                for successorState, successorAction, successorCost in successors:
+                for successorLocation, successorAction, successorCost in successors:
                     newAction = actions + [successorAction]
-                    newNode = (successorState, newAction)
+                    newNode = (successorLocation, newAction)
                     fringe.push(newNode)
     return actions
 
@@ -125,7 +131,7 @@ def breadthFirstSearch(problem):
     # Using a queue since we are working FIFO. Stored as (state, action, cost)
     fringe = util.Queue()
 
-    # previously visited nodes in a list
+    # previously visited location (nodes) in a list
     visitedNodes = []
 
     startState = problem.getStartState()
@@ -135,45 +141,64 @@ def breadthFirstSearch(problem):
 
     while not fringe.isEmpty():
         # check the first or earliest-pushed node in fringe
-        currState, actions, currCost = fringe.pop()
-        if currState not in visitedNodes:
+        state, actions, cost = fringe.pop()
+
+        # Validate we don't expand an already visited node
+        if state not in visitedNodes:
             # add popped node state into visited list
-            visitedNodes.append(currState)
-            if problem.isGoalState(currState):
+            visitedNodes.append(state)
+            # print("My location is: " + str(location))
+
+            if problem.isGoalState(state):
                 return actions
             else:
                 # list the successor, action and stepCost
-                successors = problem.getSuccessors(currState)
+                successors = problem.getSuccessors(state)
+                # print("My next move is: " + str(successors))
+
                 for successorState, successorAction, successorCost in successors:
                     newAction = actions + [successorAction]
-                    newCost = currCost + successorCost
+                    newCost = cost + successorCost
                     newNode = (successorState, newAction, newCost)
                     fringe.push(newNode)
 
     return actions
+
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     # Using a priority queue for UCS. We are working FIFO. Stored as (item, cost)
     fringe = util.PriorityQueue()
 
-    # previously expanded state in a dictionary for cycle checking. (state:cost)
+    # previously expanded nodes in a dictionary for cycle checking. Tuple = (state:cost)
     visitedNodes = {}
 
     startState = problem.getStartState()
-    startNode = (startState, [], 0) # (state, action, cost)
+    startNode = (startState, [], 0)  # (state, action, cost)
 
     fringe.push(startNode, 0)
 
     while not fringe.isEmpty():
-        # explor the first node in fringe, which should be the cheapest cost
-        currState, actions, currCost = fringe.pop()
-        if (currState not in visitedNodes) or (currCost < visitedNodes[currState]):
-            # place the popped state in our visited list
-            visitedNodes[currState] = currCost
-            #TODO: Finish this code
+        # explore the first node in fringe, which should be the cheapest cost
+        state, actions, cost = fringe.pop()
+
+        if (state not in visitedNodes) or (cost < visitedNodes[state]):
+            # place the popped location (state) into our visited list
+            visitedNodes[state] = cost
+
+            if problem.isGoalState(state):
+                return actions
+            else:
+                successors = problem.getSuccessors(state)
+
+                for successorLocation, successorAction, successorCost in successors:
+                    newAction = actions + [successorAction]
+                    newCost = cost + successorCost
+                    newNode = (successorLocation, newAction, newCost)
+                    fringe.update(newNode, newCost)
 
     return actions
+
 
 def nullHeuristic(state, problem=None):
     """
@@ -185,8 +210,53 @@ def nullHeuristic(state, problem=None):
 
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # Using a priority queue for UCS. We are working FIFO. Stored as (item, cost+heauristic)
+    fringe = util.PriorityQueue()
+
+    # store previously visited locations (nodes) in a list of tuples (location, cost)
+    visitedNodes = []
+
+    # pull the initial starting location and store this in a node variable
+    # holding (location, action, cost)
+    startLocation = problem.getStartState()
+    startNode = (startLocation, [], 0)
+
+    fringe.push(startNode, 0)
+
+    while not fringe.isEmpty():
+        # explore the cheapest node in fringe first (cost + heauristic)
+        location, actions, cost = fringe.pop()
+
+        # add location and cost to the visitedNodes list
+        visitedNodes.append((location, cost))
+
+        if problem.isGoalState(location):
+            return actions
+        else:
+            # create a list to hold the successor, action and stepCost
+            successors = problem.getSuccessors(location)
+
+            # check each successor
+            for successorLocation, successorAction, successorCost in successors:
+                newAction = actions + [successorAction]
+                newCost = problem.getCostOfActions(newAction)
+                newNode = (successorLocation, newAction, newCost)
+
+                # verify if the successor has already been visited
+                prevVisited = False
+                for visited in visitedNodes:
+                    # check each visited node tuple
+                    prevLocation, prevCost = visited
+
+                    # if successor is previously visited, update bool value of prevVisited
+                    if (successorLocation == prevLocation) and (newCost >= prevCost):
+                        prevVisited = True
+
+                # if successor is not previously visited, add it to fringe and visited list
+                if not prevVisited:
+                    fringe.push(newNode, newCost + heuristic(successorLocation, problem))
+                    visitedNodes.append((successorLocation, newCost))
+    return actions
 
 
 # Abbreviations
