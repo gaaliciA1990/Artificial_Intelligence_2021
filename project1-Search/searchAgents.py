@@ -26,13 +26,14 @@ description.
 Please only change the parts of the file you are asked to.  Look for the lines
 that say
 
-"*** YOUR CODE HERE ***"
+#Todo: Your code here
 
 The parts you fill in start about 3/4 of the way down.  Follow the project
 description for details.
 
 Good luck and happy searching!
 """
+import math
 
 from game import Directions
 from game import Agent
@@ -408,11 +409,44 @@ def cornersHeuristic(state, problem):
     shortest path from the state to a goal of the problem; i.e.  it should be
     admissible (as well as consistent).
     """
-    corners = problem.corners  # These are the corner coordinates
-    walls = problem.walls  # These are the walls of the maze, as a Grid (game.py)
+    # These are the corner coordinates
+    corners = problem.corners
+    # These are the walls of the maze, as a Grid (game.py)
+    walls = problem.walls
 
-    "*** YOUR CODE HERE ***"
-    return 0  # Default to trivial solution
+    heuristic = 0  # heuristic value
+    currentLocation = state[0]  # Current node we are on
+    visitedCorners = state[1]  # Nodes that have been visited
+    unvisitedCorners = []  # List of corners we have visited
+
+    # Find all of the corners that we have not visited yet and add them to
+    # our list so we can traverse through them
+    for i in range(0, len(corners) - 1):
+        if not visitedCorners[i]:
+            unvisitedCorners.append(problem.corners[i])
+    # If we have visited all corners and our location is within corners, return the heuristic
+    if len(unvisitedCorners) == 0 and currentLocation in problem.corners:
+        return heuristic
+
+    # find the closest corner, assuming there are no walls using euclidean approach
+    shortestDistance = math.inf  # set our shortest distance to infinity for comparison with 1st est. distance
+    for corner in unvisitedCorners:
+        estimatedDistance = euclideanDistance(currentLocation, corner)
+        if estimatedDistance < shortestDistance:
+            shortestDistance = estimatedDistance
+
+    return shortestDistance
+
+
+def euclideanDistance(currPosition, goalPosition):
+    """
+    Helper function for solving the euclidean distance from the current position
+    to the goal position so we can estimate our heuristic value
+    """
+    xy1 = currPosition
+    xy2 = goalPosition
+    # Return the pythagorean value
+    return ((xy1[0] - xy2[0]) ** 2 + (xy1[1] - xy2[1]) ** 2) ** 0.5
 
 
 class AStarCornersAgent(SearchAgent):
@@ -512,7 +546,7 @@ def foodHeuristic(state, problem):
     problem.heuristicInfo['wallCount']
     """
     position, foodGrid = state
-    "*** YOUR CODE HERE ***"
+    # TODO: Finish code
     return 0
 
 
@@ -545,7 +579,7 @@ class ClosestDotSearchAgent(SearchAgent):
         walls = gameState.getWalls()
         problem = AnyFoodSearchProblem(gameState)
 
-        "*** YOUR CODE HERE ***"
+        # Todo: Your code here
         util.raiseNotDefined()
 
 
@@ -582,7 +616,7 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         """
         x, y = state
 
-        "*** YOUR CODE HERE ***"
+        # Todo: Your code here
         util.raiseNotDefined()
 
 
