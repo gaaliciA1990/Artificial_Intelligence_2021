@@ -416,7 +416,7 @@ def cornersHeuristic(state, problem):
     # These are the walls of the maze, as a Grid (game.py)
     walls = problem.walls
 
-    heuristic = math.inf  # set our shortest distance to infinity for comparison with 1st est. distance
+    heuristic = -1  # initialize our starting heuristic
     currentLocation, visitedCorners = state
     unvisitedCorners = []  # List of corners we have visited
 
@@ -433,10 +433,11 @@ def cornersHeuristic(state, problem):
     # find the closest corner, assuming there are no walls using euclidean approach
     for pos in unvisitedCorners:
         estimatedDistance = mazeDistance(currentLocation, pos, problem.gameState)
-        if estimatedDistance < heuristic:
+        if estimatedDistance > heuristic:
             heuristic = estimatedDistance
     # print("Heuristic value = " + str(heuristic))
     return heuristic
+
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
@@ -514,7 +515,7 @@ def foodHeuristic(state, problem):
     up with an admissible heuristic; almost all admissible heuristics will be
     consistent as well.
 
-    If using A* ever finds a solution that is worse uniform cost search finds,
+    If using A* ever finds a solution that is worse than uniform cost search finds,
     your heuristic is *not* consistent, and probably not admissible!  On the
     other hand, inadmissible or inconsistent heuristics may find optimal
     solutions, so be careful.
@@ -535,8 +536,23 @@ def foodHeuristic(state, problem):
     problem.heuristicInfo['wallCount']
     """
     position, foodGrid = state
-    # TODO: Finish code
-    return 0
+    heuristic = -1  # initialize our heuristic, which will not return a negative number. If so, we did something wrong
+    maxDistance = 0  # initialize maximum distance, which will always be greater than 0
+    food = foodGrid.asList()
+
+    # Check there is food to eat for our problem, otherwise we return 0
+    if len(food) == 0:
+        return 0
+
+    # Find the farthest distance using mazeDistance(). This will ensure we visit more food along the way, thus
+    # optimizing our path as we go. Since we are calling mazeDistance, this solution is optimal in node expansion
+    # but not for time efficiency
+    for pellets in food:
+        maxDistance = mazeDistance(position, pellets, problem.startingGameState)
+        if maxDistance > heuristic:
+            heuristic = maxDistance
+
+    return heuristic
 
 
 class ClosestDotSearchAgent(SearchAgent):
