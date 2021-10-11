@@ -240,6 +240,7 @@ def aStarSearch(problem, heuristic=nullHeuristic):
             for successorLocation, successorAction, successorCost in successors:
                 newAction = actions + [successorAction]
                 newCost = problem.getCostOfActions(newAction)
+                # print("True cost is = " + str(newCost))
                 newNode = (successorLocation, newAction, newCost)
 
                 # verify if the successor has already been visited

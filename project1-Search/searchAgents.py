@@ -33,7 +33,6 @@ description for details.
 
 Good luck and happy searching!
 """
-import math
 
 from game import Directions
 from game import Agent
@@ -41,6 +40,7 @@ from game import Actions
 import util
 import time
 import search
+import math
 
 
 class GoWestAgent(Agent):
@@ -292,14 +292,16 @@ class CornersProblem(search.SearchProblem):
         self.startingPosition = startingGameState.getPacmanPosition()
         top, right = self.walls.height - 2, self.walls.width - 2
         self.corners = ((1, 1), (1, top), (right, 1), (right, top))
+
         for corner in self.corners:
             if not startingGameState.hasFood(*corner):
                 print('Warning: no food in corner ' + str(corner))
+
         self._expanded = 0  # DO NOT CHANGE; Number of search nodes expanded
         # Please add any code here which you would like to use
         # in initializing the problem
 
-        self.startingGameState = startingGameState
+        self.gameState = startingGameState
         visitedCorners = [False, False, False, False]
 
         # check to see if our starting position is in one of the four corners and
@@ -414,9 +416,8 @@ def cornersHeuristic(state, problem):
     # These are the walls of the maze, as a Grid (game.py)
     walls = problem.walls
 
-    heuristic = 0  # heuristic value
-    currentLocation = state[0]  # Current node we are on
-    visitedCorners = state[1]  # Nodes that have been visited
+    heuristic = math.inf  # set our shortest distance to infinity for comparison with 1st est. distance
+    currentLocation, visitedCorners = state
     unvisitedCorners = []  # List of corners we have visited
 
     # Find all of the corners that we have not visited yet and add them to
@@ -424,30 +425,18 @@ def cornersHeuristic(state, problem):
     for i in range(0, len(corners) - 1):
         if not visitedCorners[i]:
             unvisitedCorners.append(problem.corners[i])
-    # If we have visited all corners and our location is within corners, return the heuristic
-    if len(unvisitedCorners) == 0 and currentLocation in problem.corners:
-        return heuristic
+
+    # If we have visited all corners, return the heuristic value of 0
+    if len(unvisitedCorners) == 0:
+        return 0
 
     # find the closest corner, assuming there are no walls using euclidean approach
-    shortestDistance = math.inf  # set our shortest distance to infinity for comparison with 1st est. distance
-    for corner in unvisitedCorners:
-        estimatedDistance = euclideanDistance(currentLocation, corner)
-        if estimatedDistance < shortestDistance:
-            shortestDistance = estimatedDistance
-
-    return shortestDistance
-
-
-def euclideanDistance(currPosition, goalPosition):
-    """
-    Helper function for solving the euclidean distance from the current position
-    to the goal position so we can estimate our heuristic value
-    """
-    xy1 = currPosition
-    xy2 = goalPosition
-    # Return the pythagorean value
-    return ((xy1[0] - xy2[0]) ** 2 + (xy1[1] - xy2[1]) ** 2) ** 0.5
-
+    for pos in unvisitedCorners:
+        estimatedDistance = mazeDistance(currentLocation, pos, problem.gameState)
+        if estimatedDistance < heuristic:
+            heuristic = estimatedDistance
+    # print("Heuristic value = " + str(heuristic))
+    return heuristic
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
