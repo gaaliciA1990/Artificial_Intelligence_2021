@@ -584,8 +584,31 @@ class ClosestDotSearchAgent(SearchAgent):
         walls = gameState.getWalls()
         problem = AnyFoodSearchProblem(gameState)
 
-        # Todo: Your code here
-        util.raiseNotDefined()
+        """
+        Skipped this section, as it was optional for my homework. Greedy search is suboptimal and is looking for the
+        closest pellet/dot, which is pretty straight forward. Code copied over from another source for reference.
+        Not guaranteed to work!
+        ****************************************************************************************
+        # Perform a BFS to find the closest dot.
+        fringe = util.Queue()
+        visited = []        # List of already visited nodes
+        action_list = []    # List of actions taken to get to the current node
+        total_cost = 0      # Cost to get to the current node
+        initial = problem.getStartState()   # Starting state of the problem
+
+        fringe.push((initial, action_list))
+
+        while fringe: 
+            node, actions = fringe.pop() 
+            if not node in visited:
+                visited.append(node)
+                if problem.isGoalState(node):
+                    return actions
+                successors = problem.getSuccessors(node)
+                for successor in successors:
+                    coordinate, direction, cost = successor
+                    fringe.push((coordinate, actions + [direction]))
+        """
 
 
 class AnyFoodSearchProblem(PositionSearchProblem):
