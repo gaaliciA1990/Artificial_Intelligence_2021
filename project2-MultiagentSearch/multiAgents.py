@@ -168,50 +168,6 @@ class MinimaxAgent(MultiAgentSearchAgent):
     """
     Your minimax agent (question 2)
     """
-
-    # This helper method will compute the maximum value in minimax algorithm for pacman
-    # Takes the gameState and depth of the tree
-    def maxFunction(self, gameState, depth):
-        maxValue = float('-inf')    # Value to be returned at the end
-        pacmanLegalAction = gameState.getLegalActions(0)
-
-        # If there are no Legal actions or we've reached the end, return the evaluation function
-        if (depth == self.depth) or (len(pacmanLegalAction) == 0):
-            return self.evaluationFunction(gameState)
-
-        # Find the max value for pacmans action and return it
-        for action in pacmanLegalAction:
-            tempValue = self.minFunction(gameState.generateSuccessor(0, action), depth, 1)
-            if tempValue > maxValue:
-                maxValue = tempValue
-
-        return maxValue
-
-    # This helper method will compute the minimum value in minimax algorithm for ghosts
-    # Takes the gameState,  depth of the tree and index of the agent
-    def minFunction(self, gameState, depth, agentIndex):
-        minValue = float('inf')  # Value to be returned at the end
-        ghostLegalAction = gameState.getLegalActions(agentIndex)
-        ghostCount = gameState.getNumAgents() - 1
-
-        # If there are no Legal actions, return the evaluation function
-        if len(ghostLegalAction) == 0:
-            return self.evaluationFunction(gameState)
-        # Check the ghost action values and return the smallest number for the min branch
-        if agentIndex < ghostCount:
-            for action in ghostLegalAction:
-                tempValue = self.minFunction(gameState.generateSuccessor(agentIndex, action), depth, agentIndex + 1)
-                if tempValue < minValue:
-                    minValue = tempValue
-            return minValue
-        # check the last ghosts action values against max function and return min value
-        else:
-            for action in ghostLegalAction:
-                tempValue = self.maxFunction(gameState.generateSuccessor(agentIndex, action), depth + 1)
-                if tempValue < minValue:
-                    minValue = tempValue
-            return minValue
-
     def getAction(self, gameState):
         """
         Returns the minimax action from the current gameState using self.depth
@@ -236,11 +192,11 @@ class MinimaxAgent(MultiAgentSearchAgent):
         Returns whether or not the game state is a losing state
         """
         "*** YOUR CODE HERE - Competed with helper functions ***"
-        pacmanLegalActions = gameState.getLegalActions(0)  # all the legal actions of pacman.
+        legalActions = gameState.getLegalActions(0)  # all the legal actions of pacman.
         maxValue = float('-inf')
         maxAction = None  # one to be returned at the end.
 
-        for action in pacmanLegalActions:  # get the max value from all of it's successors.
+        for action in legalActions:  # get the max value from all of it's successors.
             actionValue = self.minFunction(gameState.generateSuccessor(0, action), 0, 1)
             if actionValue > maxValue:  # take the max of all the children.
                 maxValue = actionValue
@@ -248,6 +204,49 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
         return maxAction  # Returns the final action
 
+        # This helper method will compute the minimum value in minimax algorithm for ghosts
+    # Takes the gameState,  depth of the tree and index of the agent
+    def minFunction(self, gameState, depth, agentIndex):
+        minValue = float('inf')  # Value to be returned at the end
+        ghostLegalAction = gameState.getLegalActions(agentIndex)
+        ghostCount = gameState.getNumAgents() - 1
+
+        # If there are no Legal actions, return the evaluation function
+        if len(ghostLegalAction) == 0:
+            return self.evaluationFunction(gameState)
+
+        # Check the ghost action values and return the smallest number for the min branch
+        if agentIndex < ghostCount:
+            for action in ghostLegalAction:
+                tempValue = self.minFunction(gameState.generateSuccessor(agentIndex, action), depth, agentIndex + 1)
+                if tempValue < minValue:
+                    minValue = tempValue
+            return minValue
+        # check the last ghosts action values against max function and return min value
+        else:
+            for action in ghostLegalAction:
+                tempValue = self.maxFunction(gameState.generateSuccessor(agentIndex, action), depth + 1)
+                if tempValue < minValue:
+                    minValue = tempValue
+            return minValue
+
+    # This helper method will compute the maximum value in minimax algorithm for pacman
+    # Takes the gameState and depth of the tree
+    def maxFunction(self, gameState, depth):
+        maxValue = float('-inf')  # Value to be returned at the end
+        pacmanLegalAction = gameState.getLegalActions(0)
+
+        # If there are no Legal actions or we've reached the end, return the evaluation function
+        if (depth == self.depth) or (len(pacmanLegalAction) == 0):
+            return self.evaluationFunction(gameState)
+
+        # Find the max value for pacmans action and return it
+        for action in pacmanLegalAction:
+            tempValue = self.minFunction(gameState.generateSuccessor(0, action), depth, 1)
+            if tempValue > maxValue:
+                maxValue = tempValue
+
+        return maxValue
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
@@ -259,7 +258,65 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        alpha = float('-inf')  # max best option on path to root
+        beta = float('inf')  # min best option on path to root
+        bestMove = None
+        legalActions = gameState.getLegalActions(0)
+
+        for action in legalActions:
+            actionValue = self.minFunction(gameState.generateSuccessor(0, action), 1, 0, alpha, beta)
+            if alpha < actionValue:
+                alpha = actionValue
+                bestMove = action
+
+        return bestMove
+
+    def minFunction(self, gameState, agentIndex, depth, alpha, beta):
+        """ For Min agents best move """
+        ghostLegalAction = gameState.getLegalActions(agentIndex)
+        minValue = float('inf')
+        ghostCount = gameState.getNumAgents() - 1
+
+        # Check if there are no legal actions. If true, then return our evaluation value
+        if len(ghostLegalAction) == 0:
+            return self.evaluationFunction(gameState)
+
+        # check each ghost agent for the minimum value when the index is less than the ghost count.
+        for action in ghostLegalAction:
+            if agentIndex < ghostCount:
+                minValue = min(minValue, self.minFunction(gameState.generateSuccessor(agentIndex, action), agentIndex + 1, depth, alpha, beta))
+            else:  # the last ghost HERE
+                minValue = min(minValue, self.maxFunction(gameState.generateSuccessor(agentIndex, action), depth + 1, alpha, beta))
+
+            # Check if min value is less alpha. If yes, prune the tree by returning minValue
+            if minValue < alpha:
+                return minValue
+
+            # Update beta value to smallest value
+            beta = min(beta, minValue)
+
+        return minValue
+
+    def maxFunction(self, gameState, depth, alpha, beta):
+        """For Max agents best move"""
+        pacmacLegalAction = gameState.getLegalActions(0)
+        maxValue = float('-inf')
+
+        if depth == self.depth or len(pacmacLegalAction) == 0:
+            return self.evaluationFunction(gameState)
+
+        # check pacman's best option by evaluating the max option from the min node.
+        for action in pacmacLegalAction:
+            maxValue = max(maxValue, self.minFunction(gameState.generateSuccessor(0, action), 1, depth, alpha, beta))
+
+            # Check if max value is greater than beta. If yes, prune the tree by returning maxValue
+            if maxValue > beta:
+                return maxValue
+
+            # Update alphs value to largest value
+            alpha = max(alpha, maxValue)
+
+        return maxValue
 
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
