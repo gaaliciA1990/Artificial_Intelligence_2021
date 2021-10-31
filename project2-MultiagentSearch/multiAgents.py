@@ -175,8 +175,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
         if ((depth == self.depth) or (len(gameState.getLegalActions(0)) == 0)):
             return self.evaluationFunction(gameState)
 
-        return max([self.minFunction(gameState.generateSuccessor(0, action), 1, depth) for action in
-                    gameState.getLegalActions(0)])
+        return max([self.minFunction(gameState.generateSuccessor(0, action), depth, 1) for action in gameState.getLegalActions(0)])
 
     # This helper method will compute the minimum value in minimax algorithm for ghosts
     # Takes the gameState and depth of the tree
@@ -185,13 +184,10 @@ class MinimaxAgent(MultiAgentSearchAgent):
             return self.evaluationFunction(gameState)
 
         if (agentIndex < gameState.getNumAgents() - 1):
-            return min(
-                [self.minFunction(gameState.generateSuccessor(agentIndex, action), depth, agentIndex + 1) for action in
-                 gameState.getLegalActions(agentIndex)])
+            return min([self.minFunction(gameState.generateSuccessor(agentIndex, action), depth, agentIndex + 1) for action in gameState.getLegalActions(agentIndex)])
 
         else:  # the last ghost HERE
-            return min([self.maxFunction(gameState.generateSuccessor(agentIndex, action), depth + 1) for action in
-                        gameState.getLegalActions(agentIndex)])
+            return min([self.maxFunction(gameState.generateSuccessor(agentIndex, action), depth + 1) for action in gameState.getLegalActions(agentIndex)])
 
     def getAction(self, gameState):
         """
