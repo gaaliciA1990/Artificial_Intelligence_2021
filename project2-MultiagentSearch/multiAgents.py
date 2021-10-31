@@ -172,22 +172,45 @@ class MinimaxAgent(MultiAgentSearchAgent):
     # This helper method will compute the maximum value in minimax algorithm for pacman
     # Takes the gameState and depth of the tree
     def maxFunction(self, gameState, depth):
-        if ((depth == self.depth) or (len(gameState.getLegalActions(0)) == 0)):
+        maxValue = float('-inf')    # Value to be returned at the end
+        pacmanLegalAction = gameState.getLegalActions(0)
+
+        # If there are no Legal actions or we've reached the end, return the evaluation function
+        if (depth == self.depth) or (len(pacmanLegalAction) == 0):
             return self.evaluationFunction(gameState)
 
-        return max([self.minFunction(gameState.generateSuccessor(0, action), depth, 1) for action in gameState.getLegalActions(0)])
+        # Find the max value for pacmans action and return it
+        for action in pacmanLegalAction:
+            tempValue = self.minFunction(gameState.generateSuccessor(0, action), depth, 1)
+            if tempValue > maxValue:
+                maxValue = tempValue
+
+        return maxValue
 
     # This helper method will compute the minimum value in minimax algorithm for ghosts
-    # Takes the gameState and depth of the tree
+    # Takes the gameState,  depth of the tree and index of the agent
     def minFunction(self, gameState, depth, agentIndex):
-        if (len(gameState.getLegalActions(agentIndex)) == 0):  # No Legal actions.
+        minValue = float('inf')  # Value to be returned at the end
+        ghostLegalAction = gameState.getLegalActions(agentIndex)
+        ghostCount = gameState.getNumAgents() - 1
+
+        # If there are no Legal actions, return the evaluation function
+        if len(ghostLegalAction) == 0:
             return self.evaluationFunction(gameState)
-
-        if (agentIndex < gameState.getNumAgents() - 1):
-            return min([self.minFunction(gameState.generateSuccessor(agentIndex, action), depth, agentIndex + 1) for action in gameState.getLegalActions(agentIndex)])
-
-        else:  # the last ghost HERE
-            return min([self.maxFunction(gameState.generateSuccessor(agentIndex, action), depth + 1) for action in gameState.getLegalActions(agentIndex)])
+        # Check the ghost action values and return the smallest number for the min branch
+        if agentIndex < ghostCount:
+            for action in ghostLegalAction:
+                tempValue = self.minFunction(gameState.generateSuccessor(agentIndex, action), depth, agentIndex + 1)
+                if tempValue < minValue:
+                    minValue = tempValue
+            return minValue
+        # check the last ghosts action values against max function and return min value
+        else:
+            for action in ghostLegalAction:
+                tempValue = self.maxFunction(gameState.generateSuccessor(agentIndex, action), depth + 1)
+                if tempValue < minValue:
+                    minValue = tempValue
+            return minValue
 
     def getAction(self, gameState):
         """
@@ -212,18 +235,18 @@ class MinimaxAgent(MultiAgentSearchAgent):
         gameState.isLose():
         Returns whether or not the game state is a losing state
         """
-        "*** YOUR CODE HERE - Competed ***"
-        pacman_legal_actions = gameState.getLegalActions(0)  # all the legal actions of pacman.
-        max_value = float('-inf')
-        max_action = None  # one to be returned at the end.
+        "*** YOUR CODE HERE - Competed with helper functions ***"
+        pacmanLegalActions = gameState.getLegalActions(0)  # all the legal actions of pacman.
+        maxValue = float('-inf')
+        maxAction = None  # one to be returned at the end.
 
-        for action in pacman_legal_actions:  # get the max value from all of it's successors.
-            action_value = self.minFunction(gameState.generateSuccessor(0, action), 0, 1)
-            if ((action_value) > max_value):  # take the max of all the children.
-                max_value = action_value
-                max_action = action
+        for action in pacmanLegalActions:  # get the max value from all of it's successors.
+            actionValue = self.minFunction(gameState.generateSuccessor(0, action), 0, 1)
+            if actionValue > maxValue:  # take the max of all the children.
+                maxValue = actionValue
+                maxAction = action
 
-        return max_action  # Returns the final action
+        return maxAction  # Returns the final action
 
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
