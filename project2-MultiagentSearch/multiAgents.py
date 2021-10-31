@@ -76,22 +76,31 @@ class ReflexAgent(Agent):
         pacmanDirection = currentGameState.getPacmanState().getDirection()
 
         "*** YOUR CODE HERE - Completed ***"
-        largeFoodReward = 100
-        smallFoodReward = 50
-        nearFoodReward = 25
+        foodReward = 50
+        nearFoodReward = 1
         scaredTimeReward = 10
-        ghostEncounterPenalty = -100
+        ghostEncounterPenalty = -50
         stopPenalty = -50
-        reversePenalty = -10  # penalty for going in reverse to prevent back and forth loop
+        reversePenalty = -15  # penalty for going in reverse to prevent back and forth loop
 
         score = successorGameState.getScore()
 
         ghostDistance = [manhattanDistance(newPos, ghost.getPosition()) for ghost in newGhostStates]
-        closestGhost = min(ghostDistance)
+        closestGhost = float('inf')
+        scaredGhostTimer = 0
+
+        # Determine the closest ghost and that ghosts scared status to determine when to run
+        for i in range(len(ghostDistance)):
+            if ghostDistance[i] < closestGhost:
+                closestGhost = ghostDistance[i]
+                scaredGhostTimer = newScaredTimes[i]
 
         # run from the ghosts, unless the timer is active
         if closestGhost <= 1:
-            score += ghostEncounterPenalty
+            if scaredGhostTimer > 0:
+                score += scaredTimeReward
+            else:
+                score += ghostEncounterPenalty
 
         foodDistance = [manhattanDistance(newPos, foodPos) for foodPos in newFood]
 
@@ -102,15 +111,17 @@ class ReflexAgent(Agent):
         # Always have the closest food variable to use for maximizing food eating
         closestFood = min(foodDistance)
 
-        # Find the big Pellet, move closer to the food and eat the food
+        # Find the food, move closer to the food and eat the food. This isn't actually being hit when running
+        # not sure how we can tell pacman he's eaten the food
         if closestFood == 0:
-            score += largeFoodReward
+            score += foodReward
         # If we are near the food, we get a smaller reward based on distance to pellet
         # to encourage movement towards the food
         else:
             score += nearFoodReward / closestFood
 
-        # add penalty for going in reverse to avoid back and forth loop
+        # add penalty for going in reverse when scores are close to each other
+        # to avoid back and forth loop.
         if pacmanSuccessorDirection == Directions.REVERSE[pacmanDirection]:
             score += reversePenalty
 
@@ -158,6 +169,75 @@ class MinimaxAgent(MultiAgentSearchAgent):
     Your minimax agent (question 2)
     """
 
+    # This helper method will compute the maximum value in minimax algorithm for pacman
+    # Takes the gameState and depth of the tree
+    def maxFunction(self, gameState, depth):
+        max_result = Directions.STOP
+        pacmanIndex = 0 # The index for pacman is 0.
+        actions = gameState.getLegalActions(pacmanIndex) # The legal actions pacman can take.
+        maxValue = -100000  # maxVale set to the negative infinity for Minimax algorithm.
+
+        # Terminal test determine if we've finished the game.
+        if gameState.isWin() or gameState.isLose():
+            return self.evaluationFunction(gameState)
+
+        # Loop to generate successors.
+        for action in actions:
+            # Generate next action from non-Stop legal actions
+            if action != Directions.STOP:
+                # Generate successor for the pacman using action from actions.
+                nextState = gameState.generateSuccessor(pacmanIndex, action)
+
+                # Minimize next agent
+                ghostIndex = pacmanIndex + 1
+                value = self.minFunction(nextState, depth, ghostIndex)
+
+                # Check if value is greater than negative infinity.
+                if value > maxValue:  # and action!= Directions.STOP:
+                    # Update value of negative infinity
+                    maxValue = max(value, maxValue)
+                    # Update the action taken by max-player.
+                    max_result = action
+            # Return action taken for depth being 1.
+        return (maxValue, max_result)[depth == 1]
+
+    # This helper method will compute the minimum value in minimax algorithm for ghosts
+    # Takes the gameState and depth of the tree
+    def minFunction(self, gameState, depth, agentIndex):
+        value = 1000000
+        # Ghost actions denotes legal action the ghost agent can take.
+        ghost_actions = gameState.getLegalActions(agentIndex)
+        # lbound denotes the positive inifinity value of MinMax algorithm.
+        lbound = 100000
+        # agent_count dentoes the total number of enemy agents in game.
+        agent_count = gameState.getNumAgents()
+
+        # Terminal test to check if the state is terminal state so as to cut-off.
+        if gameState.isLose():
+            return self.evaluationFunction(gameState)
+
+        # Loop for every action in legal ghost/agent actions.
+        for action in ghost_actions:
+            # Remove action from legal actions according to question.
+            if action != Directions.STOP:
+                next_node = gameState.generateSuccessor(agentIndex, action)
+                # Decrement the agent_count to check if ghost/agent left.
+                if agentIndex == agent_count - 1:
+                    # Check if leaf node reached.
+                    if depth == self.depth:
+                        value = self.evaluationFunction(next_node)
+                    # Else call max_fun to maximize value in next ply.
+                    else:
+                        value = self.maxFunction(next_node, depth + 1)
+                else:
+                    # For remaining ghosts, minimize the value.
+                    value = self.minFunction(next_node, depth, agentIndex + 1)
+            # Update the value of positive infinity
+            if value < lbound:  # and action!= Directions.STOP:
+                lbound = min(value, lbound)
+                min_result = action
+        return lbound
+
     def getAction(self, gameState):
         """
         Returns the minimax action from the current gameState using self.depth
@@ -181,9 +261,10 @@ class MinimaxAgent(MultiAgentSearchAgent):
         gameState.isLose():
         Returns whether or not the game state is a losing state
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        "*** YOUR CODE HERE - Competed ***"
+        max_result = self.maxFunction(gameState, 0)
 
+        return max_result
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
