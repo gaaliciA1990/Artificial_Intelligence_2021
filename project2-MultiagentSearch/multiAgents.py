@@ -337,7 +337,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         All ghosts should be modeled as choosing uniformly at random from their
         legal moves.
         """
-        "*** YOUR CODE HERE ***"
+        "*** YOUR CODE HERE - Completed with helper functions ***"
         pacmanLegalAction = gameState.getLegalActions(0)  # all the legal actions of pacman.
         maxValue = float('-inf')    # initialize our maxValue for comparison with value of action returned
         bestMove = None  # action returned at the end.
@@ -401,8 +401,52 @@ def betterEvaluationFunction(currentGameState):
     DESCRIPTION: <write something here so we know what you did>
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    ghostState = currentGameState.getGhostStates()  # all the ghost states
+    ghostCount = currentGameState.getNumAgents()    # number of ghosts
+    pacmanPosition = currentGameState.getPacmanPosition()   # pacman position
+    food = (currentGameState.getFood()).asList()  # get all the food as list.
+    largeFood = currentGameState.getCapsules()  # get all the large foods.
+    foodCount = len(food)   # total food items in the maze
+    largeFoodCount = len(largeFood) # total larger food (timer) items in the maze
+    score = 0  # initializing to zero.
 
+    # Feature 1 no of Legalactions: Not working well
+    # state_score += len(currentGameState.getLegalPacmanActions())/40.0
+
+    ghostDistance = float('inf')
+    # Determine the distances from ghosts if exists
+    if ghostCount > 1:
+        for ghost in ghostState:
+            tempGhostDist = manhattanDistance(pacmanPosition, ghost.getPosition())
+            if tempGhostDist < ghostDistance:
+                ghostDistance = tempGhostDist
+        if ghostDistance <= 1:
+            return -10000   # Penalty?
+        score -= 1.0 / ghostDistance
+
+    # Feature 3 food positions
+    currentFood = pacmanPosition
+    for pellet in food:
+        closestFood = min(food, key=lambda x: manhattanDistance(x, currentFood))
+        score += 1.0 / (manhattanDistance(currentFood, closestFood))
+        currentFood = closestFood
+        food.remove(closestFood)
+
+    # Feature 4 capsule positions
+    current_capsule = pacmanPosition
+    for capsule in largeFood:
+        closest_capsule = min(largeFood, key=lambda x: manhattanDistance(x, current_capsule))
+        score += 1.0 / (manhattanDistance(current_capsule, closest_capsule))
+        current_capsule = closest_capsule
+        largeFood.remove(closest_capsule)
+
+    # Feature 4 Score of the game
+    score += 8 * (currentGameState.getScore())
+
+    # Feature 5: remaining food and capsule
+    score -= 6 * (foodCount + largeFoodCount)
+
+    return score
 
 # Abbreviation
 better = betterEvaluationFunction
