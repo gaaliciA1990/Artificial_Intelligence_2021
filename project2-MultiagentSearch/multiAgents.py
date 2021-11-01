@@ -168,6 +168,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
     """
     Your minimax agent (question 2)
     """
+
     def getAction(self, gameState):
         """
         Returns the minimax action from the current gameState using self.depth
@@ -204,7 +205,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
         return maxAction  # Returns the final action
 
-        # This helper method will compute the minimum value in minimax algorithm for ghosts
+    # This helper method will compute the minimum value in minimax algorithm for ghosts
     # Takes the gameState,  depth of the tree and index of the agent
     def minFunction(self, gameState, depth, agentIndex):
         minValue = float('inf')  # Value to be returned at the end
@@ -248,6 +249,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
         return maxValue
 
+
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
     Your minimax agent with alpha-beta pruning (question 3)
@@ -257,7 +259,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
         Returns the minimax action using self.depth and self.evaluationFunction
         """
-        "*** YOUR CODE HERE ***"
+        "*** YOUR CODE HERE - Completed with helper functions ***"
         alpha = float('-inf')  # max best option on path to root
         beta = float('inf')  # min best option on path to root
         bestMove = None
@@ -271,6 +273,8 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
         return bestMove
 
+    # This helper method will compute the minimum value in minimax algorithm for ghosts
+    # Takes the gameState,  depth of the tree and index of the agent
     def minFunction(self, gameState, agentIndex, depth, alpha, beta):
         """ For Min agents best move """
         ghostLegalAction = gameState.getLegalActions(agentIndex)
@@ -297,6 +301,8 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
         return minValue
 
+    # This helper method will compute the maximum value in minimax algorithm for pacman
+    # Takes the gameState and depth of the tree
     def maxFunction(self, gameState, depth, alpha, beta):
         """For Max agents best move"""
         pacmacLegalAction = gameState.getLegalActions(0)
@@ -332,7 +338,59 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         legal moves.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        pacmanLegalAction = gameState.getLegalActions(0)  # all the legal actions of pacman.
+        maxValue = float('-inf')    # initialize our maxValue for comparison with value of action returned
+        bestMove = None  # action returned at the end.
+
+        # Determine the best action to take from the expectimax algorithm
+        for action in pacmanLegalAction:
+            actionValue = self.minFunction(gameState.generateSuccessor(0, action), 1, 0)
+            if actionValue > maxValue:
+                maxValue = actionValue
+                bestMove = action
+
+        return bestMove
+
+    # This helper method will compute the minimum value in Expectimax algorithm for ghosts
+    # Takes the gameState,  depth of the tree and index of the agent
+    def minFunction(self, gameState, agentIndex, depth):
+        numGhostActions = len(gameState.getLegalActions(agentIndex))    # total number of ghost actions
+        ghostLegalActions = gameState.getLegalActions(agentIndex)   # legal actions a ghost can take
+        ghostCount = gameState.getNumAgents() - 1   # number of ghosts in the game
+        sumOfActions = 0    # variable for holding the sum of actions taken
+
+        # Check if there are no legal actions. If true, then return our evaluation value
+        if numGhostActions == 0:  # No Legal actions.
+            return self.evaluationFunction(gameState)
+
+        # For each ghost, take the sum of it's actions and return the average for determining the route
+        # with the best probability for success
+        if agentIndex < ghostCount:
+            for action in ghostLegalActions:
+                sumOfActions += self.minFunction(gameState.generateSuccessor(agentIndex, action), agentIndex + 1, depth)
+            return sumOfActions / float(numGhostActions)
+        else:
+            for action in ghostLegalActions:
+                sumOfActions += self.Max_Value(gameState.generateSuccessor(agentIndex, action), depth + 1)
+            return sumOfActions / float(numGhostActions)
+
+    # This helper method will compute the maximum value in Expectimax algorithm for pacman
+    # Takes the gameState and depth of the tree
+    def Max_Value(self, gameState, depth):
+        pacmanLegalAction = gameState.getLegalActions(0)    # legal actions pacman can take
+        maxValue = float('-inf')    # Value to be returned at the end
+
+        # If there are no Legal actions or we've reached the end, return the evaluation function
+        if (depth == self.depth) or (len(pacmanLegalAction) == 0):
+            return self.evaluationFunction(gameState)
+
+        # Find the max value for pacmans action and return it
+        for action in pacmanLegalAction:
+            tempValue = self.minFunction(gameState.generateSuccessor(0, action), 1, depth)
+            if tempValue > maxValue:
+                maxValue = tempValue
+
+        return maxValue
 
 
 def betterEvaluationFunction(currentGameState):
