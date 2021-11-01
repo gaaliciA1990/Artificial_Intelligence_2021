@@ -85,6 +85,7 @@ class ReflexAgent(Agent):
 
         score = successorGameState.getScore()
 
+        # enhanced for loop to populate the distance from each ghost
         ghostDistance = [manhattanDistance(newPos, ghost.getPosition()) for ghost in newGhostStates]
         closestGhost = float('inf')
         scaredGhostTimer = 0
@@ -102,6 +103,7 @@ class ReflexAgent(Agent):
             else:
                 score += ghostEncounterPenalty
 
+        # Enhanced for loop for determining the distance from each food
         foodDistance = [manhattanDistance(newPos, foodPos) for foodPos in newFood]
 
         # If the length of the foodDistance list is 0 (empty) we won! Return a large number
@@ -339,7 +341,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         """
         "*** YOUR CODE HERE - Completed with helper functions ***"
         pacmanLegalAction = gameState.getLegalActions(0)  # all the legal actions of pacman.
-        maxValue = float('-inf')    # initialize our maxValue for comparison with value of action returned
+        maxValue = float('-inf')  # initialize our maxValue for comparison with value of action returned
         bestMove = None  # action returned at the end.
 
         # Determine the best action to take from the expectimax algorithm
@@ -354,10 +356,10 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
     # This helper method will compute the minimum value in Expectimax algorithm for ghosts
     # Takes the gameState,  depth of the tree and index of the agent
     def minFunction(self, gameState, agentIndex, depth):
-        numGhostActions = len(gameState.getLegalActions(agentIndex))    # total number of ghost actions
-        ghostLegalActions = gameState.getLegalActions(agentIndex)   # legal actions a ghost can take
-        ghostCount = gameState.getNumAgents() - 1   # number of ghosts in the game
-        sumOfActions = 0    # variable for holding the sum of actions taken
+        numGhostActions = len(gameState.getLegalActions(agentIndex))  # total number of ghost actions
+        ghostLegalActions = gameState.getLegalActions(agentIndex)  # legal actions a ghost can take
+        ghostCount = gameState.getNumAgents() - 1  # number of ghosts in the game
+        sumOfActions = 0  # variable for holding the sum of actions taken
 
         # Check if there are no legal actions. If true, then return our evaluation value
         if numGhostActions == 0:  # No Legal actions.
@@ -377,8 +379,8 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
     # This helper method will compute the maximum value in Expectimax algorithm for pacman
     # Takes the gameState and depth of the tree
     def Max_Value(self, gameState, depth):
-        pacmanLegalAction = gameState.getLegalActions(0)    # legal actions pacman can take
-        maxValue = float('-inf')    # Value to be returned at the end
+        pacmanLegalAction = gameState.getLegalActions(0)  # legal actions pacman can take
+        maxValue = float('-inf')  # Value to be returned at the end
 
         # If there are no Legal actions or we've reached the end, return the evaluation function
         if (depth == self.depth) or (len(pacmanLegalAction) == 0):
@@ -398,17 +400,21 @@ def betterEvaluationFunction(currentGameState):
     Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
     evaluation function (question 5).
 
-    DESCRIPTION: <write something here so we know what you did>
+    DESCRIPTION: Reworked the whole approach to take into consideration the larger food
+    pellets and inverse the sum of the closest food and large food distances. Added the
+    the score here to the current gameState score and subtracted the remaining
+    food count from the score. Also optimized to the solution for finding the manhattan distance
     """
     "*** YOUR CODE HERE ***"
     ghostState = currentGameState.getGhostStates()  # all the ghost states
-    ghostCount = currentGameState.getNumAgents()    # number of ghosts
-    pacmanPosition = currentGameState.getPacmanPosition()   # pacman position
+    ghostCount = currentGameState.getNumAgents()  # number of ghosts
+    pacmanPosition = currentGameState.getPacmanPosition()  # pacman position
     food = (currentGameState.getFood()).asList()  # get all the food as list.
     largeFood = currentGameState.getCapsules()  # get all the large foods.
-    foodCount = len(food)   # total food items in the maze
-    largeFoodCount = len(largeFood) # total larger food (timer) items in the maze
-    score = 0  # initializing to zero.
+    foodCount = len(food)  # total food items in the maze
+    largeFoodCount = len(largeFood)  # total larger food (timer) items in the maze
+    score = currentGameState.getScore()  # initializing current game score to current gamestate score.
+    ghostEncounterPenalty = -10000  # penalty for being near a ghost
 
     # Feature 1 no of Legalactions: Not working well
     # state_score += len(currentGameState.getLegalPacmanActions())/40.0
@@ -421,10 +427,10 @@ def betterEvaluationFunction(currentGameState):
             if tempGhostDist < ghostDistance:
                 ghostDistance = tempGhostDist
         if ghostDistance <= 1:
-            return -10000   # Penalty?
+            return ghostEncounterPenalty
         score -= 1.0 / ghostDistance
 
-    # Feature 3 food positions
+    # Find the current food position
     currentFood = pacmanPosition
     for pellet in food:
         closestFood = min(food, key=lambda x: manhattanDistance(x, currentFood))
@@ -433,20 +439,18 @@ def betterEvaluationFunction(currentGameState):
         food.remove(closestFood)
 
     # Feature 4 capsule positions
-    current_capsule = pacmanPosition
-    for capsule in largeFood:
-        closest_capsule = min(largeFood, key=lambda x: manhattanDistance(x, current_capsule))
-        score += 1.0 / (manhattanDistance(current_capsule, closest_capsule))
-        current_capsule = closest_capsule
-        largeFood.remove(closest_capsule)
+    currentLargeFood = pacmanPosition
+    for largePellet in largeFood:
+        closestLargePellet = min(largeFood, key=lambda x: manhattanDistance(x, currentLargeFood))
+        score += 1.0 / (manhattanDistance(currentLargeFood, closestLargePellet))
+        currentLargeFood = closestLargePellet
+        largeFood.remove(closestLargePellet)
 
-    # Feature 4 Score of the game
-    score += 8 * (currentGameState.getScore())
-
-    # Feature 5: remaining food and capsule
+    # subtract the remaining food and largeFood counts from the total score
     score -= 6 * (foodCount + largeFoodCount)
 
     return score
+
 
 # Abbreviation
 better = betterEvaluationFunction
