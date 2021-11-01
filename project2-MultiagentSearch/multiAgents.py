@@ -446,7 +446,7 @@ def betterEvaluationFunction(currentGameState):
         currentLargeFood = closestLargePellet
         largeFood.remove(closestLargePellet)
 
-    # subtract the remaining food and largeFood counts from the total score
+    # subtract the remaining food and largeFood counts times a penalty coefficient from the total score
     score -= 6 * (foodCount + largeFoodCount)
 
     return score
