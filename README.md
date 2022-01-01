@@ -27,5 +27,31 @@ another online source. I know it's not complete and will need to work on it in o
 
 ## Project 2 - Multi-Agent Search
 This project focuses on designing algorithms for the adversarial agents, Pacman and ghost, using different approaches. In the 
-file ``placeholder.py`` we edited the following methods:<br>
-<!-- TODO: FINISH THIS SECTION -->
+file ``multiAgents.py``. The following classees were worked on:<br>
+
+1. ReflexAgent
+2. MultiAgentSearch
+3. MinimaxAgent
+4. AlphaBetaAgent
+5. ExpectimaxAgent
+6. ExpectimaxAgent -> betterEvaluationFunction
+
+## Project 3 - Reinforcement Learning
+This project focuses on designing algorithms for reinforced learning for pacman through QLearning so that he can finish the game without losing. I got 100% wins during my tests.  The primary files edited were ``qlearningAgents.py`` and ``analysis.py``.
+### In ``analysis.py``
+1. question2
+2. question3a-3e
+3. question8
+
+### In ``qlearningAgents.py``
+1. QLearningAgent class </br>
+  a. getQValue</br>
+  b. computeValueFromQValues </br>
+  c. computeActionFromQValues </br>
+  d. getAction </br>
+  e. update </br>
+2. ApproximateQAgent</br>
+  a. getQvalue</br>
+  b. update</br>
+  c. final</br>
+
